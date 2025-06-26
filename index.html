@@ -196,6 +196,14 @@
             margin-bottom: 15px;
         }
 
+        .rs-summary {
+            font-weight: bold;
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(74, 111, 165, 0.1);
+            border-radius: 4px;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 15px;
@@ -231,6 +239,11 @@
                 <input type="number" id="rounds" min="1" value="1">
             </div>
             
+            <div class="form-group">
+                <label for="rs-difference">💰 RS Difference (5, 10, etc.)</label>
+                <input type="number" id="rs-difference" min="5" step="5" value="5">
+            </div>
+            
             <button id="start-game" class="hidden">🚀 Start Game</button>
             <button id="load-last-game" class="btn-warning hidden">⏮️ Load Last Game</button>
         </div>
@@ -253,9 +266,16 @@
                         <th>Rank</th>
                         <th>Player</th>
                         <th>Total Points</th>
+                        <th>RS</th>
                     </tr>
                 </thead>
                 <tbody id="results-body"></tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" style="text-align: right;"><strong>Total RS:</strong></td>
+                        <td id="total-rs" style="font-weight: bold;">0</td>
+                    </tr>
+                </tfoot>
             </table>
             
             <div class="points-summary">
@@ -286,7 +306,8 @@
             id: null,
             timestamp: null,
             completed: false,
-            lastSaved: null
+            lastSaved: null,
+            rsDifference: 5
         };
 
         // DOM elements
@@ -294,6 +315,7 @@
         const addPlayerBtn = document.getElementById('add-player');
         const playersList = document.getElementById('players');
         const roundsInput = document.getElementById('rounds');
+        const rsDifferenceInput = document.getElementById('rs-difference');
         const startGameBtn = document.getElementById('start-game');
         const loadLastGameBtn = document.getElementById('load-last-game');
         const pointsInputSection = document.getElementById('points-input');
@@ -304,6 +326,7 @@
         const resultsSection = document.getElementById('results');
         const resultsBody = document.getElementById('results-body');
         const breakdownBody = document.getElementById('breakdown-body');
+        const totalRsElement = document.getElementById('total-rs');
         const newGameBtn = document.getElementById('new-game-btn');
         const playerInputSection = document.getElementById('player-input');
         const statusEl = document.getElementById('status');
@@ -392,6 +415,7 @@
             game.id = Date.now().toString();
             game.timestamp = new Date().toISOString();
             game.completed = false;
+            game.rsDifference = parseInt(rsDifferenceInput.value) || 5;
             
             game.players.forEach(player => {
                 game.points[player] = Array(game.rounds).fill(null);
@@ -525,6 +549,20 @@
             // Find minimum points
             const minPoints = Math.min(...Object.values(totals));
             
+            // Calculate RS values
+            const rsValues = {};
+            let totalRs = 0;
+            
+            sortedPlayers.forEach((player, index) => {
+                if (totals[player] === minPoints) {
+                    rsValues[player] = 0; // NILL gets 0 RS
+                } else {
+                    // Others get increasing multiples of the RS difference
+                    rsValues[player] = (sortedPlayers.length - index - 1) * game.rsDifference;
+                }
+                totalRs += rsValues[player];
+            });
+            
             // Display results
             resultsBody.innerHTML = '';
             sortedPlayers.forEach((player, index) => {
@@ -543,9 +581,13 @@
                     <td>${rankDisplay}</td>
                     <td>${player}</td>
                     <td>${total}</td>
+                    <td>${rsValues[player]}</td>
                 `;
                 resultsBody.appendChild(row);
             });
+            
+            // Update total RS
+            totalRsElement.textContent = totalRs;
             
             // Display points breakdown
             displayPointsBreakdown(totals);
@@ -595,6 +637,7 @@
                     if (game.players.length > 0) {
                         renderPlayers();
                         roundsInput.value = game.rounds;
+                        rsDifferenceInput.value = game.rsDifference;
                         
                         if (game.completed) {
                             showResultsSection();
@@ -635,6 +678,7 @@
                     
                     renderPlayers();
                     roundsInput.value = game.rounds;
+                    rsDifferenceInput.value = game.rsDifference;
                     
                     if (game.completed) {
                         showResultsSection();
@@ -663,9 +707,11 @@
             game.id = null;
             game.timestamp = null;
             game.completed = false;
+            game.rsDifference = 5;
             
             playersList.innerHTML = '';
             roundsInput.value = '1';
+            rsDifferenceInput.value = '5';
             playerNameInput.value = '';
             startGameBtn.classList.add('hidden');
             loadLastGameBtn.classList.add('hidden');
