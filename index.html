@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏆 Player Points Tracker</title>
+    <style>
+        :root {
+            --primary: #4a6fa5;
+            --secondary: #166088;
+            --accent: #4fc3f7;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #f5f5f5;
+            color: var(--dark);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h1, h2, h3 {
+            color: var(--secondary);
+            margin-bottom: 20px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            background: var(--light);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.3s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: var(--secondary);
+        }
+
+        .btn-success {
+            background: var(--success);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: var(--dark);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: var(--primary);
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background: #f2f2f2;
+        }
+
+        .player-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .player-tag {
+            background: var(--accent);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+
+        .player-tag button {
+            background: none;
+            border: none;
+            color: white;
+            margin-left: 5px;
+            padding: 0;
+            width: auto;
+            cursor: pointer;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .rank-1 {
+            background: #ffd700;
+            font-weight: bold;
+        }
+
+        .rank-2 {
+            background: #c0c0c0;
+        }
+
+        .rank-3 {
+            background: #cd7f32;
+        }
+
+        .nill {
+            color: var(--danger);
+            font-weight: bold;
+        }
+
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .status-success {
+            background: rgba(40, 167, 69, 0.2);
+            color: var(--success);
+        }
+
+        .status-error {
+            background: rgba(220, 53, 69, 0.2);
+            color: var(--danger);
+        }
+
+        .status-warning {
+            background: rgba(255, 193, 7, 0.2);
+            color: var(--warning);
+        }
+
+        .points-summary {
+            margin-top: 30px;
+        }
+
+        .points-summary h3 {
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            th, td {
+                padding: 8px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏆 Player Points Tracker</h1>
+        
+        <!-- Player Input Section -->
+        <div class="section" id="player-input">
+            <h2>👥 Add Players</h2>
+            <div id="status" class="status hidden"></div>
+            <div class="form-group">
+                <label for="player-name">Player Name</label>
+                <input type="text" id="player-name" placeholder="Enter player name">
+            </div>
+            <button id="add-player" type="button">➕ Add Player</button>
+            
+            <h3>🎯 Players List</h3>
+            <div class="player-list" id="players"></div>
+            
+            <div class="form-group">
+                <label for="rounds">🔢 Number of Rounds</label>
+                <input type="number" id="rounds" min="1" value="1">
+            </div>
+            
+            <button id="start-game" class="hidden">🚀 Start Game</button>
+            <button id="load-last-game" class="btn-warning hidden">⏮️ Load Last Game</button>
+        </div>
+        
+        <!-- Points Input Section -->
+        <div class="section hidden" id="points-input">
+            <h2>📊 Enter Points</h2>
+            <div id="rounds-container"></div>
+            <button id="next-round" class="hidden">⏭️ Next Round</button>
+            <button id="calculate" class="hidden">🧮 Calculate Results</button>
+            <button id="save-progress" class="btn-success">💾 Save Progress</button>
+        </div>
+        
+        <!-- Results Section -->
+        <div class="section hidden" id="results">
+            <h2>🏅 Final Results</h2>
+            <table id="results-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Player</th>
+                        <th>Total Points</th>
+                    </tr>
+                </thead>
+                <tbody id="results-body"></tbody>
+            </table>
+            
+            <div class="points-summary">
+                <h3>📝 Points Breakdown</h3>
+                <table id="points-breakdown">
+                    <thead>
+                        <tr>
+                            <th>Player</th>
+                            <th>Round Points</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="breakdown-body"></tbody>
+                </table>
+            </div>
+            
+            <button id="new-game-btn">🔄 New Game</button>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        const game = {
+            players: [],
+            rounds: 1,
+            currentRound: 1,
+            points: {},
+            id: null,
+            timestamp: null,
+            completed: false,
+            lastSaved: null
+        };
+
+        // DOM elements
+        const playerNameInput = document.getElementById('player-name');
+        const addPlayerBtn = document.getElementById('add-player');
+        const playersList = document.getElementById('players');
+        const roundsInput = document.getElementById('rounds');
+        const startGameBtn = document.getElementById('start-game');
+        const loadLastGameBtn = document.getElementById('load-last-game');
+        const pointsInputSection = document.getElementById('points-input');
+        const roundsContainer = document.getElementById('rounds-container');
+        const nextRoundBtn = document.getElementById('next-round');
+        const calculateBtn = document.getElementById('calculate');
+        const saveProgressBtn = document.getElementById('save-progress');
+        const resultsSection = document.getElementById('results');
+        const resultsBody = document.getElementById('results-body');
+        const breakdownBody = document.getElementById('breakdown-body');
+        const newGameBtn = document.getElementById('new-game-btn');
+        const playerInputSection = document.getElementById('player-input');
+        const statusEl = document.getElementById('status');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Bind removePlayer to window
+            window.removePlayer = function(name) {
+                game.players = game.players.filter(p => p !== name);
+                renderPlayers();
+                
+                if (game.players.length < 2) {
+                    startGameBtn.classList.add('hidden');
+                }
+                
+                showStatus('Player removed.', 'warning');
+                saveGameState();
+            };
+            
+            // Add player event listeners
+            addPlayerBtn.addEventListener('click', addPlayer);
+            playerNameInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addPlayer();
+                }
+            });
+            
+            // Game control buttons
+            startGameBtn.addEventListener('click', startGame);
+            loadLastGameBtn.addEventListener('click', loadLastGame);
+            nextRoundBtn.addEventListener('click', proceedToNextRound);
+            calculateBtn.addEventListener('click', () => calculateResults(true));
+            saveProgressBtn.addEventListener('click', saveProgress);
+            newGameBtn.addEventListener('click', resetGame);
+            
+            // Load any saved game
+            loadGameState();
+        });
+
+        // Add player function
+        function addPlayer() {
+            const name = playerNameInput.value.trim();
+            
+            if (!name) {
+                showStatus('Please enter a player name', 'error');
+                return;
+            }
+            
+            if (game.players.includes(name)) {
+                showStatus('Player already exists!', 'error');
+                return;
+            }
+            
+            game.players.push(name);
+            renderPlayers();
+            playerNameInput.value = '';
+            playerNameInput.focus();
+            
+            if (game.players.length >= 2) {
+                startGameBtn.classList.remove('hidden');
+            }
+            
+            showStatus('Player added!', 'success');
+            saveGameState();
+        }
+
+        // Render players list
+        function renderPlayers() {
+            playersList.innerHTML = '';
+            game.players.forEach(player => {
+                const playerTag = document.createElement('div');
+                playerTag.className = 'player-tag';
+                playerTag.innerHTML = `
+                    ${player}
+                    <button onclick="removePlayer('${player}')">×</button>
+                `;
+                playersList.appendChild(playerTag);
+            });
+        }
+
+        // Start game
+        function startGame() {
+            game.rounds = parseInt(roundsInput.value) || 1;
+            game.currentRound = 1;
+            game.points = {};
+            game.id = Date.now().toString();
+            game.timestamp = new Date().toISOString();
+            game.completed = false;
+            
+            game.players.forEach(player => {
+                game.points[player] = Array(game.rounds).fill(null);
+            });
+            
+            showPointsInputSection();
+            renderRound();
+            saveGameState();
+            
+            showStatus('Game started!', 'success');
+        }
+
+        // Show points input section
+        function showPointsInputSection() {
+            playerInputSection.classList.add('hidden');
+            pointsInputSection.classList.remove('hidden');
+            resultsSection.classList.add('hidden');
+        }
+
+        // Show results section
+        function showResultsSection() {
+            playerInputSection.classList.add('hidden');
+            pointsInputSection.classList.add('hidden');
+            resultsSection.classList.remove('hidden');
+        }
+
+        // Render current round
+        function renderRound() {
+            roundsContainer.innerHTML = `
+                <h3>Round ${game.currentRound}</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Player</th>
+                            <th>Points</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${game.players.map(player => `
+                            <tr>
+                                <td>${player}</td>
+                                <td>
+                                    <input type="number" 
+                                           id="round-${game.currentRound}-${player}" 
+                                           min="0" 
+                                           value="${game.points[player][game.currentRound - 1] !== null ? game.points[player][game.currentRound - 1] : ''}"
+                                           placeholder="Enter points"
+                                           data-player="${player}"
+                                           data-round="${game.currentRound}">
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            if (game.currentRound === game.rounds) {
+                nextRoundBtn.classList.add('hidden');
+                calculateBtn.classList.remove('hidden');
+            } else {
+                nextRoundBtn.classList.remove('hidden');
+                calculateBtn.classList.add('hidden');
+            }
+            
+            const firstInput = document.querySelector(`#round-${game.currentRound}-${game.players[0]}`);
+            if (firstInput) firstInput.focus();
+        }
+
+        // Validate all points are entered before proceeding
+        function validateRoundPoints() {
+            let allValid = true;
+            
+            game.players.forEach(player => {
+                const input = document.querySelector(`#round-${game.currentRound}-${player}`);
+                if (input) {
+                    const value = input.value.trim();
+                    if (value === '') {
+                        input.style.borderColor = 'var(--danger)';
+                        allValid = false;
+                    } else {
+                        input.style.borderColor = '';
+                    }
+                }
+            });
+            
+            return allValid;
+        }
+
+        // Save points for current round
+        function saveRoundPoints() {
+            game.players.forEach(player => {
+                const input = document.querySelector(`#round-${game.currentRound}-${player}`);
+                if (input) {
+                    const value = input.value.trim();
+                    game.points[player][game.currentRound - 1] = value === '' ? null : parseInt(value);
+                }
+            });
+        }
+
+        // Proceed to next round
+        function proceedToNextRound() {
+            if (!validateRoundPoints()) {
+                showStatus('Please enter points for all players', 'error');
+                return;
+            }
+            
+            saveRoundPoints();
+            game.currentRound++;
+            renderRound();
+            saveGameState();
+        }
+
+        // Calculate results
+        function calculateResults(shouldSave = true) {
+            if (!validateRoundPoints()) {
+                showStatus('Please enter points for all players', 'error');
+                return;
+            }
+            
+            saveRoundPoints();
+            
+            // Calculate totals (treat null as 0)
+            const totals = {};
+            game.players.forEach(player => {
+                totals[player] = game.points[player].reduce((sum, points) => sum + (points || 0), 0);
+            });
+            
+            // Sort players by points (descending)
+            const sortedPlayers = [...game.players].sort((a, b) => totals[b] - totals[a]);
+            
+            // Find minimum points
+            const minPoints = Math.min(...Object.values(totals));
+            
+            // Display results
+            resultsBody.innerHTML = '';
+            sortedPlayers.forEach((player, index) => {
+                const total = totals[player];
+                const row = document.createElement('tr');
+                
+                if (index === 0) row.classList.add('rank-1');
+                else if (index === 1) row.classList.add('rank-2');
+                else if (index === 2) row.classList.add('rank-3');
+                
+                const rankDisplay = total === minPoints ? 
+                    '<span class="nill">NILL</span>' : 
+                    (index + 1);
+                
+                row.innerHTML = `
+                    <td>${rankDisplay}</td>
+                    <td>${player}</td>
+                    <td>${total}</td>
+                `;
+                resultsBody.appendChild(row);
+            });
+            
+            // Display points breakdown
+            displayPointsBreakdown(totals);
+            
+            // Mark game as completed
+            game.completed = true;
+            showResultsSection();
+            
+            if (shouldSave) {
+                saveGameState();
+            }
+        }
+
+        // Display points breakdown in table format
+        function displayPointsBreakdown(totals) {
+            breakdownBody.innerHTML = '';
+            
+            game.players.forEach(player => {
+                const roundPoints = game.points[player].map(points => points || 0);
+                const pointsString = roundPoints.join(' + ');
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${player}</td>
+                    <td>${pointsString}</td>
+                    <td>${totals[player]}</td>
+                `;
+                breakdownBody.appendChild(row);
+            });
+        }
+
+        // Save progress
+        function saveProgress() {
+            saveRoundPoints();
+            saveGameState();
+            showStatus('Progress saved!', 'success');
+        }
+
+        // Load game state from localStorage
+        function loadGameState() {
+            try {
+                const savedGame = localStorage.getItem('currentGame');
+                if (savedGame) {
+                    const parsed = JSON.parse(savedGame);
+                    Object.assign(game, parsed);
+                    
+                    if (game.players.length > 0) {
+                        renderPlayers();
+                        roundsInput.value = game.rounds;
+                        
+                        if (game.completed) {
+                            showResultsSection();
+                            calculateResults(false);
+                        } else if (game.currentRound > 1 || Object.keys(game.points).length > 0) {
+                            showPointsInputSection();
+                            renderRound();
+                        }
+                        
+                        loadLastGameBtn.classList.remove('hidden');
+                        showStatus('Game loaded from backup', 'success');
+                    }
+                }
+            } catch (e) {
+                console.error('Error loading game state:', e);
+                showStatus('Error loading saved game', 'error');
+            }
+        }
+
+        // Save game state to localStorage
+        function saveGameState() {
+            try {
+                game.lastSaved = new Date().toISOString();
+                localStorage.setItem('currentGame', JSON.stringify(game));
+            } catch (e) {
+                console.error('Error saving game state:', e);
+                showStatus('Error saving game progress', 'error');
+            }
+        }
+
+        // Load last game
+        function loadLastGame() {
+            const savedGame = localStorage.getItem('currentGame');
+            if (savedGame) {
+                try {
+                    const parsed = JSON.parse(savedGame);
+                    Object.assign(game, parsed);
+                    
+                    renderPlayers();
+                    roundsInput.value = game.rounds;
+                    
+                    if (game.completed) {
+                        showResultsSection();
+                        calculateResults(false);
+                    } else {
+                        showPointsInputSection();
+                        renderRound();
+                    }
+                    
+                    showStatus('Game loaded successfully!', 'success');
+                } catch (e) {
+                    console.error('Error loading game:', e);
+                    showStatus('Error loading game', 'error');
+                }
+            } else {
+                showStatus('No saved game found', 'warning');
+            }
+        }
+
+        // Reset game
+        function resetGame() {
+            game.players = [];
+            game.rounds = 1;
+            game.currentRound = 1;
+            game.points = {};
+            game.id = null;
+            game.timestamp = null;
+            game.completed = false;
+            
+            playersList.innerHTML = '';
+            roundsInput.value = '1';
+            playerNameInput.value = '';
+            startGameBtn.classList.add('hidden');
+            loadLastGameBtn.classList.add('hidden');
+            
+            resultsSection.classList.add('hidden');
+            pointsInputSection.classList.add('hidden');
+            playerInputSection.classList.remove('hidden');
+            
+            localStorage.removeItem('currentGame');
+            
+            showStatus('New game ready!', 'success');
+        }
+
+        // Show status message
+        function showStatus(message, type) {
+            statusEl.textContent = message;
+            statusEl.className = `status status-${type}`;
+            statusEl.classList.remove('hidden');
+            
+            setTimeout(() => {
+                statusEl.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Save data before page unload
+        window.addEventListener('beforeunload', (e) => {
+            if (game.players.length > 0 && !game.completed) {
+                saveRoundPoints();
+                saveGameState();
+                
+                // For older browsers that show custom message
+                e.preventDefault();
+                e.returnValue = 'Your game progress will be saved';
+            }
+        });
+    </script>
+</body>
+</html>
